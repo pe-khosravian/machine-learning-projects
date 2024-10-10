@@ -2,7 +2,7 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as t
 
 data_1 = pd.read_csv('d:\marketing_campaign.csv', sep='\t')
 df_info = data_1.info()
@@ -35,13 +35,13 @@ clusters = kmeans.fit_predict(normalized_df[['Income', 'TotalSpending']])
 data_1['Cluster_TotalSpending'] = clusters
 
 #showing clusters based on Income and Total Spending
-plt.figure(figsize=(8,6))
-plt.scatter(normalized_df['Income'], normalized_df['TotalSpending'], c=clusters, cmap='plasma', marker='o', edgecolor='k', s=50)
-plt.title('Customer Clusters based on Income and Total Spending')
-plt.xlabel('Normalized Income')
-plt.ylabel('Normalized Total Spending')
-plt.grid(True)
-plt.show()
+t.figure(figsize=(8,6))
+t.scatter(normalized_df['Income'], normalized_df['TotalSpending'], c=clusters, cmap='plasma', marker='o', edgecolor='k', s=50)
+t.title('Customer Clusters based on Income and Total Spending')
+t.xlabel('Normalized Income')
+t.ylabel('Normalized Total Spending')
+t.grid(True)
+t.show()
 
 #Export the final dataset with clusters for using in Tableau 
 export_path = 'D:\python_prj\customer_clusters_with_python.csv'
