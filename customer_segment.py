@@ -1,55 +1,49 @@
-# Import necessary libraries
+
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy.cluster.hierarchy import dendrogram, linkage
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import AgglomerativeClustering
-from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
-df = pd.read_csv('d:\marketing_campaign.csv', sep='\t')
-
-df_info = df.info()
-df_head = df.head()
+data_1 = pd.read_csv('d:\marketing_campaign.csv', sep='\t')
+df_info = data_1.info()
+df_head = data_1.head()
 df_info, df_head
 
-print(df)
-df.dropna(inplace=True)
+print(data_1)
+print(data_1.isnull().sum())
 
-numerical_columns = ['Income', 'Kidhome', 'Teenhome', 'Recency', 
-                     'NumDealsPurchases', 'NumWebPurchases', 'NumCatalogPurchases', 
-                     'NumStorePurchases', 'NumWebVisitsMonth']
+#Missing Values (Income)
+#data_1['Income'].fillna(data_1['Income'].median(), inplace=True)
+data_1.dropna(inplace=True)
 
-# افزودن ستون جدید برای مجموع هزینه‌ها
-df['Total_spend'] = df[['MntWines', 'MntFruits', 'MntMeatProducts', 'MntFishProducts', 
-                      'MntSweetProducts', 'MntGoldProds']].sum(axis=1)
+#Create new feature for total spending
+data_1['TotalSpending'] = data_1[['MntWines', 'MntFruits', 'MntMeatProducts', 'MntFishProducts', 'MntSweetProducts', 'MntGoldProds']].sum(axis=1)
 
-numerical_columns.append('Total_spend')
+features = data_1[['Income', 'TotalSpending']]
 
-# حذف ردیف‌های دارای داده‌های گمشده در ستون‌های انتخاب شده
-df_cleaned = df[numerical_columns].dropna()
+#Normalizing data
 scaler = StandardScaler()
-scaled_data = scaler.fit_transform(df_cleaned)
-kmeans = KMeans(n_clusters=3)
-kmeans.fit(scaled_data)
-# اضافه کردن برچسب خوشه‌ها به دیتاست اصلی
-df_cleaned['Cluster'] = kmeans.labels_
-print(df_cleaned.head())
-plt.scatter(scaled_data[:, numerical_columns.index('Income')], scaled_data[:, numerical_columns.index('Total_spend')], 
-            c=kmeans.labels_, cmap='viridis')
-plt.title("K-Means Clustering (Income vs Total_spend)")
-plt.xlabel('Income')
-plt.ylabel('Total_spend')
+normalized_data_1 = scaler.fit_transform(features)
+normalized_df = pd.DataFrame(normalized_data_1, columns=features.columns)
+#normalized_df = data_1
+
+#K-Means Clustering
+kmeans = KMeans(n_clusters=3, random_state=42)
+clusters = kmeans.fit_predict(normalized_df[['Income', 'TotalSpending']])
+
+#Add clusters to  original dataset
+data_1['Cluster_TotalSpending'] = clusters
+
+#showing clusters based on Income and Total Spending
+plt.figure(figsize=(8,6))
+plt.scatter(normalized_df['Income'], normalized_df['TotalSpending'], c=clusters, cmap='plasma', marker='o', edgecolor='k', s=50)
+plt.title('Customer Clusters based on Income and Total Spending')
+plt.xlabel('Normalized Income')
+plt.ylabel('Normalized Total Spending')
+plt.grid(True)
 plt.show()
 
-print(df_cleaned.head())
-# Export Data to CSV
-df_cleaned.to_csv('clustering_file.csv', index=False)
-
-
-
+#Export the final dataset with clusters for using in Tableau 
+export_path = 'D:\python_prj\customer_clusters_with_python.csv'
+data_1.to_csv(export_path, index=False)
 
